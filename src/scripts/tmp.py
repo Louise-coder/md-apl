@@ -4,11 +4,12 @@ Authors : Dounia BENYAKHLAF & Louise LAM
 Molecular Dynamics - 2024
 """
 
-from typing import Tuple
+import matplotlib.pyplot as plt
 from MDAnalysis import Universe, AtomGroup
 from numpy import ndarray
 from scipy.spatial import Voronoi, voronoi_plot_2d
-import matplotlib.pyplot as plt
+from typing import Tuple
+
 
 from common import GRO_FILE, XTC_FILE
 
