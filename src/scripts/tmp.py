@@ -55,7 +55,7 @@ def temporary_name(universe: Universe):
     my_universe : Universe
         The universe of interest.
     """
-    for frame in universe.trajectory:
+    for _ in universe.trajectory:
         all_p_atoms = universe.select_atoms("name P")
         p_up, _ = get_p_from_layer(all_p_atoms)
         get_voronoi(p_up.positions[:, 0:2])
