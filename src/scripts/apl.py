@@ -8,13 +8,23 @@ import matplotlib.pyplot as plt
 from MDAnalysis import Universe, AtomGroup
 from numpy import ndarray
 from scipy.spatial import Voronoi, voronoi_plot_2d
-from typing import Tuple
-
+from shapely.geometry import Polygon
+from typing import Tuple, List
 
 from common import GRO_FILE, XTC_FILE
 
 
-def get_voronoi(p_layer: ndarray):
+def get_areas(my_voronoi: Voronoi) -> List:
+    areas = []
+    for region in my_voronoi.regions:
+        if -1 not in region and len(region) > 0:
+            region_vertices = [my_voronoi.vertices[vertice_index] for vertice_index in region]
+            polygon = Polygon(region_vertices)
+            areas.append(polygon.area)
+    return areas
+
+
+def get_voronoi(p_layer: ndarray, frame_index: int, nb_frame: int):
     """Compute Voronoi tesselations on a set of coordinates.
 
     Parameters
@@ -23,8 +33,10 @@ def get_voronoi(p_layer: ndarray):
         For a layer, the array containing the coordinates of P atoms.
     """
     my_voronoi = Voronoi(p_layer)
-    voronoi_plot_2d(my_voronoi)
-    plt.show()
+    if(frame_index in (0, nb_frame-1)):
+        voronoi_plot_2d(my_voronoi)
+        plt.savefig("src/fig/voronoi_diagram_"+str(frame_index))
+    return my_voronoi
 
 
 def get_p_from_layer(all_p_atoms: AtomGroup) -> Tuple:
@@ -55,11 +67,18 @@ def temporary_name(universe: Universe):
     my_universe : Universe
         The universe of interest.
     """
-    for _ in universe.trajectory:
+    #sum_area_per_frame = 0
+    for my_frame in universe.trajectory:
         all_p_atoms = universe.select_atoms("name P")
+        my_universe.atoms.wrap(compound = "atoms")
         p_up, _ = get_p_from_layer(all_p_atoms)
-        get_voronoi(p_up.positions[:, 0:2])
+        print(p_up.positions)
+        my_voronoi = get_voronoi(p_up.positions[:, 0:2], my_frame.frame, len(universe.trajectory))
+        areas = get_areas(my_voronoi)
+        avg_area = sum(areas)/len(areas)
+        #sum_area_per_frame+=avg_area
         break
+    #print(sum_area_per_frame/len(universe.trajectory))
 
 
 if __name__ == "__main__":
