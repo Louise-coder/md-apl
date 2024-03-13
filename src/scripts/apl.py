@@ -14,7 +14,27 @@ from typing import Tuple, List
 from common import GRO_FILE, XTC_FILE
 
 
-def get_areas(my_voronoi: Voronoi) -> List:
+def is_region_out(region_vertices: List, box_dimensions: ndarray) -> bool:
+    """Verify if the region of interest is open or not.
+
+    Parameters
+    ----------
+    region_vertices : List
+        The list containing the vertices of the region of interest.
+    box_dimensions : ndarray
+        The dimensions of the simulation box.
+
+    Returns
+    -------
+    bool
+        Whereas the region is open or not.
+    """
+    box_max_x = box_dimensions[0]
+    box_max_y = box_dimensions[1]
+    for x, y in region_vertices:
+        if x < 0 or y < 0 or x > box_max_x or y > box_max_y:
+            return True
+    return False
     my_areas = []
     for region in my_voronoi.regions:
         if -1 not in region and len(region) > 0:
@@ -22,8 +42,10 @@ def get_areas(my_voronoi: Voronoi) -> List:
                 my_voronoi.vertices[vertice_index]
                 for vertice_index in region
             ]
-            polygon = Polygon(region_vertices)
-            my_areas.append(polygon.area)
+            region_out = is_region_out(region_vertices, box_dimensions)
+            if not region_out:
+                polygon = Polygon(region_vertices)
+                my_areas.append(polygon.area)
     return my_areas
 
 
@@ -84,8 +106,9 @@ def get_frame_apl(universe: Universe, frame_index: int) -> float:
         frame_index,
         len(universe.trajectory),
     )
-    my_areas = get_areas(my_voronoi)
-    frame_apl = sum(my_areas) / len(my_areas)
+    my_areas = get_areas(my_voronoi, universe.dimensions)
+    conversion_factor = 100
+    frame_apl = sum(my_areas) / (len(my_areas) * conversion_factor)
     return frame_apl
 
 
