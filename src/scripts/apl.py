@@ -112,6 +112,25 @@ def get_frame_apl(universe: Universe, frame_index: int) -> float:
     return frame_apl
 
 
+def get_apl_distribution(all_frame_apl: List):
+    """Get apl distribution depending on the frame of the trajectory.
+
+    Parameters
+    ----------
+    all_frame_apl : List
+        The list of the apl values for each frame.
+    """
+    x = [i for i in range(len(all_frame_apl))]
+    y = all_frame_apl
+    plt.plot(x, y)
+    plt.xlabel("Frames")
+    plt.ylabel("APL (nm^2)")
+    plt.title("Variation of APL values across trajectory frames")
+    plt.savefig("src/fig/apl_distribution")
+    print("\033[90m* The APL distribution has been saved in fig/\033[0m\n")
+    plt.close()
+
+
 def get_trajectory_apl(universe: Universe):
     """Get the average area per lipid value.
 
@@ -120,11 +139,12 @@ def get_trajectory_apl(universe: Universe):
     my_universe : Universe
         The universe of interest.
     """
-    sum_frame_apl = 0
+    all_frame_apl = []
     for my_frame in universe.trajectory:
         frame_apl = get_frame_apl(universe, my_frame.frame)
-        sum_frame_apl += frame_apl
-    trajectory_apl = sum_frame_apl / (len(universe.trajectory) * 1000)
+        all_frame_apl.append(frame_apl)
+    get_apl_distribution(all_frame_apl)
+    trajectory_apl = sum(all_frame_apl) / len(all_frame_apl)
     return trajectory_apl
 
 
