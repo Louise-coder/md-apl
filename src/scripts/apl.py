@@ -15,7 +15,7 @@ from common import GRO_FILE, XTC_FILE
 
 
 def get_areas(my_voronoi: Voronoi) -> List:
-    areas = []
+    my_areas = []
     for region in my_voronoi.regions:
         if -1 not in region and len(region) > 0:
             region_vertices = [
@@ -23,15 +23,15 @@ def get_areas(my_voronoi: Voronoi) -> List:
                 for vertice_index in region
             ]
             polygon = Polygon(region_vertices)
-            areas.append(polygon.area)
-    return areas
+            my_areas.append(polygon.area)
+    return my_areas
 
 
 def get_voronoi(p_layer: ndarray, frame_index: int, nb_frame: int):
     """Compute Voronoi tesselations on a set of coordinates.
 
     Parameters
-    ==========
+    ----------
     p_layer : ndarray
         For a layer, the array containing the coordinates of P atoms.
     """
@@ -46,12 +46,12 @@ def get_p_from_layer(all_p_atoms: AtomGroup) -> Tuple:
     """Get the coordinates of the P atoms from each layer.
 
     Parameters
-    ==========
+    ----------
     all_p_atoms : AtomGroup
         For a frame, the coordinates of all P atoms.
 
     Returns
-    =======
+    -------
     Tuple(List, List)
         A tuple containing the coordinates of p atoms from both layers.
     """
@@ -62,32 +62,50 @@ def get_p_from_layer(all_p_atoms: AtomGroup) -> Tuple:
     return p_up, p_down
 
 
-def temporary_name(universe: Universe):
-    """Get the Voronoi Diagram for each frame of the trajectory.
+def get_frame_apl(universe: Universe, frame_index: int) -> float:
+    """Given a frame, compute the apl.
+
+    Parameters
+    ----------
+    universe : Universe
+        The universe of interest.
+    frame_index : int
+        The index of the frame of interest.
+
+    Returns
+    -------
+    frame_apl : float
+        The computed apl.
+    """
+    all_p_atoms = universe.select_atoms("name P")
+    p_up, _ = get_p_from_layer(all_p_atoms)
+    my_voronoi = get_voronoi(
+        p_up.positions[:, 0:2],
+        frame_index,
+        len(universe.trajectory),
+    )
+    my_areas = get_areas(my_voronoi)
+    frame_apl = sum(my_areas) / len(my_areas)
+    return frame_apl
+
+
+def get_trajectory_apl(universe: Universe):
+    """Get the average area per lipid value.
 
     Parameters
     ==========
     my_universe : Universe
         The universe of interest.
     """
-    # sum_area_per_frame = 0
+    sum_frame_apl = 0
     for my_frame in universe.trajectory:
-        all_p_atoms = universe.select_atoms("name P")
-        my_universe.atoms.wrap(compound="atoms")
-        p_up, _ = get_p_from_layer(all_p_atoms)
-        print(p_up.positions)
-        my_voronoi = get_voronoi(
-            p_up.positions[:, 0:2],
-            my_frame.frame,
-            len(universe.trajectory),
-        )
-        areas = get_areas(my_voronoi)
-        avg_area = sum(areas) / len(areas)
-        # sum_area_per_frame+=avg_area
-        break
-    # print(sum_area_per_frame/len(universe.trajectory))
+        frame_apl = get_frame_apl(universe, my_frame.frame)
+        sum_frame_apl += frame_apl
+    trajectory_apl = sum_frame_apl / (len(universe.trajectory) * 1000)
+    return trajectory_apl
 
 
 if __name__ == "__main__":
     my_universe = Universe(GRO_FILE, XTC_FILE)
-    temporary_name(my_universe)
+    trajectory_apl = get_trajectory_apl(my_universe)
+    print(trajectory_apl)
