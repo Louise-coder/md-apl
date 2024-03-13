@@ -35,6 +35,23 @@ def is_region_out(region_vertices: List, box_dimensions: ndarray) -> bool:
         if x < 0 or y < 0 or x > box_max_x or y > box_max_y:
             return True
     return False
+
+
+def get_areas(my_voronoi: Voronoi, box_dimensions: ndarray) -> List:
+    """Compute the areas of the Voronoi Diagram's cells.
+
+    Parameters
+    ----------
+    my_voronoi : Voronoi
+        The Voronoi diagram of interest.
+    box_dimensions : ndarray
+        The dimensions of the simulation box.
+
+    Returns
+    -------
+    List
+        The computed list of areas.
+    """
     my_areas = []
     for region in my_voronoi.regions:
         if -1 not in region and len(region) > 0:
@@ -49,13 +66,20 @@ def is_region_out(region_vertices: List, box_dimensions: ndarray) -> bool:
     return my_areas
 
 
-def get_voronoi(p_layer: ndarray, frame_index: int, nb_frame: int):
+def get_voronoi(
+    p_layer: ndarray, frame_index: int, nb_frame: int
+) -> Voronoi:
     """Compute Voronoi tesselations on a set of coordinates.
 
     Parameters
     ----------
     p_layer : ndarray
         For a layer, the array containing the coordinates of P atoms.
+
+    Returns
+    -------
+    my_voronoi : Voronoi
+        The resulting Voronoi diagram.
     """
     my_voronoi = Voronoi(p_layer)
     if frame_index in (0, nb_frame - 1):
@@ -97,7 +121,11 @@ def get_frame_apl(universe: Universe, frame_index: int) -> float:
     Returns
     -------
     frame_apl : float
-        The computed apl.
+        The computed apl in nm2.
+
+    Notes
+    -----
+    The conversion factor is set to 100 because 1nm^2 = 100A^2.
     """
     all_p_atoms = universe.select_atoms("name P")
     p_up, _ = get_p_from_layer(all_p_atoms)
