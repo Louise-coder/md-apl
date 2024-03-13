@@ -18,7 +18,10 @@ def get_areas(my_voronoi: Voronoi) -> List:
     areas = []
     for region in my_voronoi.regions:
         if -1 not in region and len(region) > 0:
-            region_vertices = [my_voronoi.vertices[vertice_index] for vertice_index in region]
+            region_vertices = [
+                my_voronoi.vertices[vertice_index]
+                for vertice_index in region
+            ]
             polygon = Polygon(region_vertices)
             areas.append(polygon.area)
     return areas
@@ -33,9 +36,9 @@ def get_voronoi(p_layer: ndarray, frame_index: int, nb_frame: int):
         For a layer, the array containing the coordinates of P atoms.
     """
     my_voronoi = Voronoi(p_layer)
-    if(frame_index in (0, nb_frame-1)):
+    if frame_index in (0, nb_frame - 1):
         voronoi_plot_2d(my_voronoi)
-        plt.savefig("src/fig/voronoi_diagram_"+str(frame_index))
+        plt.savefig("src/fig/voronoi_diagram_" + str(frame_index))
     return my_voronoi
 
 
@@ -67,18 +70,22 @@ def temporary_name(universe: Universe):
     my_universe : Universe
         The universe of interest.
     """
-    #sum_area_per_frame = 0
+    # sum_area_per_frame = 0
     for my_frame in universe.trajectory:
         all_p_atoms = universe.select_atoms("name P")
-        my_universe.atoms.wrap(compound = "atoms")
+        my_universe.atoms.wrap(compound="atoms")
         p_up, _ = get_p_from_layer(all_p_atoms)
         print(p_up.positions)
-        my_voronoi = get_voronoi(p_up.positions[:, 0:2], my_frame.frame, len(universe.trajectory))
+        my_voronoi = get_voronoi(
+            p_up.positions[:, 0:2],
+            my_frame.frame,
+            len(universe.trajectory),
+        )
         areas = get_areas(my_voronoi)
-        avg_area = sum(areas)/len(areas)
-        #sum_area_per_frame+=avg_area
+        avg_area = sum(areas) / len(areas)
+        # sum_area_per_frame+=avg_area
         break
-    #print(sum_area_per_frame/len(universe.trajectory))
+    # print(sum_area_per_frame/len(universe.trajectory))
 
 
 if __name__ == "__main__":
