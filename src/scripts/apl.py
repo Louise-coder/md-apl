@@ -84,7 +84,10 @@ def get_voronoi(
     my_voronoi = Voronoi(p_layer)
     if frame_index in (0, nb_frame - 1):
         voronoi_plot_2d(my_voronoi)
+        plt.title("Voronoi Diagram for the frame no" + str(frame_index))
         plt.savefig("src/fig/voronoi_diagram_" + str(frame_index))
+        print("\033[90m* A Voronoi diagram has been saved in fig/\033[0m")
+        plt.close()
     return my_voronoi
 
 
@@ -176,7 +179,32 @@ def get_trajectory_apl(universe: Universe):
     return trajectory_apl
 
 
+def display_info(universe: Universe):
+    """Display the information associated to the universe.
+
+    Parameters
+    ----------
+    universe : Universe
+        The universe of interest.
+
+    Notes
+    -----
+    You will sometimes find ANSI color codes in print statements.
+    """
+    nb_atoms = len(universe.atoms)
+    box_dimensions = universe.dimensions[0:3]
+    nb_frames = len(universe.trajectory)
+    print("\n\033[95m========== APL Calculator ==========\033[0m")
+    print(f"Number of atoms:\t{nb_atoms}")
+    print(f"Number of frames:\t{nb_frames}")
+    print(f"Box dimensions:\t\t{box_dimensions}\n")
+    print(f"\033[92mLoading...\033[0m\n")
+
+
 if __name__ == "__main__":
     my_universe = Universe(GRO_FILE, XTC_FILE)
+    display_info(my_universe)
     trajectory_apl = get_trajectory_apl(my_universe)
-    print(trajectory_apl)
+    print(
+        f"Computed APL for this trajectory : \033[94m{trajectory_apl:.3f} nm^2\033[0m\n"
+    )
