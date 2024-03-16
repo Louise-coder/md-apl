@@ -1,1 +1,2 @@
 src/data/md_OK_dt100_zOK.xtc filter=lfs diff=lfs merge=lfs -text
+src/data/md_mixte_OK_dt100_zOK.xtc filter=lfs diff=lfs merge=lfs -text
