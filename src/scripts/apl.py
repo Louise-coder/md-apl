@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from MDAnalysis import Universe, AtomGroup
 from numpy import ndarray
 from scipy.spatial import Voronoi, voronoi_plot_2d
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon, box
 from typing import Tuple, List
 
 from common import GRO_FILE, XTC_FILE
@@ -63,6 +63,34 @@ def get_areas(my_voronoi: Voronoi, box_dimensions: ndarray) -> List:
             if not region_out:
                 polygon = Polygon(region_vertices)
                 my_areas.append(polygon.area)
+    return my_areas
+
+
+def get_areas_2(my_voronoi: Voronoi, box_dimensions: ndarray) -> List:
+    """Compute the areas of the Voronoi Diagram's cells.
+
+    Parameters
+    ----------
+    my_voronoi : Voronoi
+        The Voronoi diagram of interest.
+    box_dimensions : ndarray
+        The dimensions of the simulation box.
+
+    Returns
+    -------
+    List
+        The computed list of areas.
+    """
+    my_areas = []
+    my_box = box(0, 0, box_dimensions[0], box_dimensions[1])
+    for region in my_voronoi.regions:
+        if -1 not in region and len(region) > 0:
+            region_vertices = [
+                my_voronoi.vertices[vertice_index] for vertice_index in region
+            ]
+            polygon = Polygon(region_vertices)
+            intersection = polygon.intersection(my_box)
+            my_areas.append(intersection.area)
     return my_areas
 
 
@@ -137,7 +165,7 @@ def get_frame_apl(universe: Universe, frame_index: int) -> float:
         frame_index,
         len(universe.trajectory),
     )
-    my_areas = get_areas(my_voronoi, universe.dimensions)
+    my_areas = get_areas_2(my_voronoi, universe.dimensions)
     conversion_factor = 100
     frame_apl = sum(my_areas) / (len(my_areas) * conversion_factor)
     return frame_apl
