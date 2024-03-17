@@ -16,6 +16,8 @@ from common import (
     SINGLE_XTC_FILE,
     MIX_GRO_FILE,
     MIX_XTC_FILE,
+    EXP_DMPC_VALUE,
+    EXP_DMPG_VALUE,
 )
 
 CHOICE = -1
@@ -234,8 +236,13 @@ def get_apl_distribution(all_frame_apl: List, type: str):
     x = [i for i in range(len(all_frame_apl))]
     y = all_frame_apl
     trajectory_apl = sum(all_frame_apl) / len(all_frame_apl)
+    if type == "DMPC":
+        exp_value = EXP_DMPC_VALUE
+    else:
+        exp_value = EXP_DMPG_VALUE
     plt.plot(x, y)
     plt.plot(x, [trajectory_apl] * len(all_frame_apl), color="red")
+    plt.plot(x, [exp_value] * len(all_frame_apl), color="orange")
     plt.xlabel("Frames")
     plt.ylabel("APL (nm²)")
     plt.title(f"Variation of {type} APL values across trajectory frames")
