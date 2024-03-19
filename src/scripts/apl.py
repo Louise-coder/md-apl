@@ -71,11 +71,14 @@ def get_areas(
     for region in my_voronoi.regions:
         if -1 not in region and len(region) > 0:
             region_vertices = [
-                my_voronoi.vertices[vertice_index] for vertice_index in region
+                my_voronoi.vertices[vertice_index]
+                for vertice_index in region
             ]
             polygon = Polygon(region_vertices)
             intersection = polygon.intersection(my_box)
-            is_dmpc = is_inside_polygon(dmpc_p_up.positions[:, 0:2], intersection)
+            is_dmpc = is_inside_polygon(
+                dmpc_p_up.positions[:, 0:2], intersection
+            )
             if is_dmpc:
                 dmpc_areas.append(intersection.area)
             else:
@@ -83,7 +86,9 @@ def get_areas(
     return dmpc_areas, dmpg_areas
 
 
-def get_voronoi(p_layer: ndarray, frame_index: int, nb_frame: int) -> Voronoi:
+def get_voronoi(
+    p_layer: ndarray, frame_index: int, nb_frame: int
+) -> Voronoi:
     """Compute Voronoi tesselations on a set of coordinates.
 
     Parameters
@@ -152,11 +157,17 @@ def get_frame_apl(universe: Universe, frame_index: int) -> Tuple:
     my_voronoi = get_voronoi(
         all_p_up.positions[:, 0:2], frame_index, len(universe.trajectory)
     )
-    dmpc_areas, dmpg_areas = get_areas(my_voronoi, universe.dimensions, dmpc_p_up)
+    dmpc_areas, dmpg_areas = get_areas(
+        my_voronoi, universe.dimensions, dmpc_p_up
+    )
     conversion_factor = 100
-    dmpc_frame_apl = sum(dmpc_areas) / (len(dmpc_areas) * conversion_factor)
+    dmpc_frame_apl = sum(dmpc_areas) / (
+        len(dmpc_areas) * conversion_factor
+    )
     if CHOICE == 2:
-        dmpg_frame_apl = sum(dmpg_areas) / (len(dmpg_areas) * conversion_factor)
+        dmpg_frame_apl = sum(dmpg_areas) / (
+            len(dmpg_areas) * conversion_factor
+        )
     return dmpc_frame_apl, dmpg_frame_apl
 
 
@@ -206,7 +217,9 @@ def get_trajectory_apl(universe: Universe) -> Tuple:
     for my_frame in universe.trajectory:
         if my_frame.frame % 100 == 0:
             print(f".......... FRAME {my_frame.frame} ..........")
-        dmpc_frame_apl, dmpg_frame_apl = get_frame_apl(universe, my_frame.frame)
+        dmpc_frame_apl, dmpg_frame_apl = get_frame_apl(
+            universe, my_frame.frame
+        )
         dmpc_list_apl.append(dmpc_frame_apl)
         if CHOICE == 2:
             dmpg_list_apl.append(dmpg_frame_apl)
@@ -235,7 +248,7 @@ def display_info(universe: Universe):
     nb_frames = len(universe.trajectory)
     print(f"\nNumber of atoms:\t{nb_atoms}")
     print(f"Number of frames:\t{nb_frames}")
-    print(f"Box dimensions:\t\t{box_dimensions}\n")
+    print(f"Box dimensions (Å):\t{box_dimensions}\n")
     print(f"\033[92mLoading...\033[0m\n")
 
 
